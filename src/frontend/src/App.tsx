@@ -21,7 +21,6 @@ interface Controls {
   right: boolean;
 }
 
-type CarBrand = "BMW" | "Audi" | "Lamborghini" | "Bugatti";
 type CameraMode = "follow" | "front" | "left" | "right" | "top";
 
 // ── Seeded RNG ─────────────────────────────────────────────────────────────
@@ -31,599 +30,6 @@ function makeRng(seed: number) {
     s = (s * 16807 + 0) % 2147483647;
     return (s - 1) / 2147483646;
   };
-}
-
-// ── BMW Car ────────────────────────────────────────────────────────────────
-function BMWCar({
-  carRef,
-  position,
-  rotation,
-}: {
-  carRef?: React.MutableRefObject<CarState>;
-  position?: [number, number, number];
-  rotation?: number;
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-  const wheelRefs = useRef<THREE.Mesh[]>([]);
-  const setWheelRef = (i: number) => (el: THREE.Mesh | null) => {
-    if (el) wheelRefs.current[i] = el;
-  };
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    if (carRef) {
-      const state = carRef.current;
-      groupRef.current.position.set(state.x, 0, state.z);
-      groupRef.current.rotation.y = state.angle + Math.PI / 2;
-      for (const w of wheelRefs.current)
-        if (w) w.rotation.x -= state.speed * 0.05;
-    }
-  });
-
-  return (
-    <group
-      ref={groupRef}
-      position={carRef ? undefined : position}
-      rotation={carRef ? undefined : [0, rotation ?? 0, 0]}
-    >
-      <mesh position={[0, 0.45, 0]} castShadow>
-        <boxGeometry args={[4.5, 0.6, 2.0]} />
-        <meshStandardMaterial color="#d0d8e8" metalness={0.8} roughness={0.2} />
-      </mesh>
-      <mesh position={[0.1, 0.98, 0]} castShadow>
-        <boxGeometry args={[2.4, 0.65, 1.72]} />
-        <meshStandardMaterial
-          color="#b8c2d4"
-          metalness={0.7}
-          roughness={0.25}
-        />
-      </mesh>
-      <mesh position={[1.6, 0.55, 0]} castShadow>
-        <boxGeometry args={[1.4, 0.12, 1.9]} />
-        <meshStandardMaterial color="#c8d2e4" metalness={0.8} roughness={0.2} />
-      </mesh>
-      <mesh position={[2.32, 0.28, 0]} castShadow>
-        <boxGeometry args={[0.18, 0.28, 2.1]} />
-        <meshStandardMaterial color="#5a6070" metalness={0.5} roughness={0.4} />
-      </mesh>
-      <mesh position={[-2.32, 0.28, 0]} castShadow>
-        <boxGeometry args={[0.18, 0.28, 2.1]} />
-        <meshStandardMaterial color="#5a6070" metalness={0.5} roughness={0.4} />
-      </mesh>
-      <mesh position={[2.31, 0.44, 0.32]}>
-        <boxGeometry args={[0.06, 0.2, 0.28]} />
-        <meshStandardMaterial
-          color="#111418"
-          metalness={0.9}
-          roughness={0.15}
-        />
-      </mesh>
-      <mesh position={[2.31, 0.44, -0.32]}>
-        <boxGeometry args={[0.06, 0.2, 0.28]} />
-        <meshStandardMaterial
-          color="#111418"
-          metalness={0.9}
-          roughness={0.15}
-        />
-      </mesh>
-      <mesh position={[1.18, 0.96, 0]} rotation={[0, 0, -0.42]}>
-        <boxGeometry args={[0.06, 0.68, 1.62]} />
-        <meshStandardMaterial
-          color="#88aacc"
-          transparent
-          opacity={0.45}
-          metalness={0.1}
-          roughness={0.05}
-        />
-      </mesh>
-      <mesh position={[-1.08, 0.96, 0]} rotation={[0, 0, 0.42]}>
-        <boxGeometry args={[0.06, 0.62, 1.58]} />
-        <meshStandardMaterial
-          color="#88aacc"
-          transparent
-          opacity={0.4}
-          metalness={0.1}
-          roughness={0.05}
-        />
-      </mesh>
-      <mesh position={[2.24, 0.52, 0.72]}>
-        <boxGeometry args={[0.12, 0.15, 0.32]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ffffcc"
-          emissiveIntensity={3}
-        />
-      </mesh>
-      <mesh position={[2.24, 0.52, -0.72]}>
-        <boxGeometry args={[0.12, 0.15, 0.32]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ffffcc"
-          emissiveIntensity={3}
-        />
-      </mesh>
-      <mesh position={[-2.24, 0.52, 0.72]}>
-        <boxGeometry args={[0.12, 0.14, 0.44]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#ff0000"
-          emissiveIntensity={2}
-        />
-      </mesh>
-      <mesh position={[-2.24, 0.52, -0.72]}>
-        <boxGeometry args={[0.12, 0.14, 0.44]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#ff0000"
-          emissiveIntensity={2}
-        />
-      </mesh>
-      <mesh position={[0, 0.1, 0]}>
-        <boxGeometry args={[4.2, 0.1, 1.8]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
-      </mesh>
-      {(
-        [
-          [1.55, 1.05],
-          [1.55, -1.05],
-          [-1.55, 1.05],
-          [-1.55, -1.05],
-        ] as [number, number][]
-      ).map(([wx, wz], i) => (
-        <group key={`${wx}-${wz}`} position={[wx, 0.38, wz]}>
-          <mesh ref={setWheelRef(i)} rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.38, 0.38, 0.25, 16]} />
-            <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
-          </mesh>
-          <mesh rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.24, 0.24, 0.26, 8]} />
-            <meshStandardMaterial
-              color="#888888"
-              metalness={0.8}
-              roughness={0.3}
-            />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
-// ── Audi Car ───────────────────────────────────────────────────────────────
-function AudiCar({
-  carRef,
-  position,
-  rotation,
-}: {
-  carRef?: React.MutableRefObject<CarState>;
-  position?: [number, number, number];
-  rotation?: number;
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-  const wheelRefs = useRef<THREE.Mesh[]>([]);
-  const setWheelRef = (i: number) => (el: THREE.Mesh | null) => {
-    if (el) wheelRefs.current[i] = el;
-  };
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    if (carRef) {
-      const state = carRef.current;
-      groupRef.current.position.set(state.x, 0, state.z);
-      groupRef.current.rotation.y = state.angle + Math.PI / 2;
-      for (const w of wheelRefs.current)
-        if (w) w.rotation.x -= state.speed * 0.05;
-    }
-  });
-
-  return (
-    <group
-      ref={groupRef}
-      position={carRef ? undefined : position}
-      rotation={carRef ? undefined : [0, rotation ?? 0, 0]}
-    >
-      {/* Sleek silver body */}
-      <mesh position={[0, 0.42, 0]} castShadow>
-        <boxGeometry args={[4.6, 0.55, 1.95]} />
-        <meshStandardMaterial
-          color="#c8c8c8"
-          metalness={0.9}
-          roughness={0.15}
-        />
-      </mesh>
-      {/* Fastback cabin */}
-      <mesh position={[0.2, 0.94, 0]} castShadow>
-        <boxGeometry args={[2.5, 0.6, 1.7]} />
-        <meshStandardMaterial
-          color="#aaaaaa"
-          metalness={0.85}
-          roughness={0.18}
-        />
-      </mesh>
-      {/* Single-frame wide grille */}
-      <mesh position={[2.3, 0.38, 0]}>
-        <boxGeometry args={[0.08, 0.3, 1.8]} />
-        <meshStandardMaterial
-          color="#111111"
-          metalness={0.95}
-          roughness={0.1}
-        />
-      </mesh>
-      {/* LED strip headlights */}
-      <mesh position={[2.28, 0.55, 0.65]}>
-        <boxGeometry args={[0.1, 0.06, 0.5]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ddeeff"
-          emissiveIntensity={4}
-        />
-      </mesh>
-      <mesh position={[2.28, 0.55, -0.65]}>
-        <boxGeometry args={[0.1, 0.06, 0.5]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ddeeff"
-          emissiveIntensity={4}
-        />
-      </mesh>
-      {/* Audi rings badge */}
-      <mesh position={[2.32, 0.44, 0]}>
-        <boxGeometry args={[0.04, 0.12, 0.6]} />
-        <meshStandardMaterial color="#cccccc" metalness={0.9} roughness={0.1} />
-      </mesh>
-      {/* Taillights */}
-      <mesh position={[-2.28, 0.5, 0.7]}>
-        <boxGeometry args={[0.1, 0.1, 0.55]} />
-        <meshStandardMaterial
-          color="#ff3333"
-          emissive="#ff0000"
-          emissiveIntensity={2}
-        />
-      </mesh>
-      <mesh position={[-2.28, 0.5, -0.7]}>
-        <boxGeometry args={[0.1, 0.1, 0.55]} />
-        <meshStandardMaterial
-          color="#ff3333"
-          emissive="#ff0000"
-          emissiveIntensity={2}
-        />
-      </mesh>
-      {/* Windshield */}
-      <mesh position={[1.2, 0.95, 0]} rotation={[0, 0, -0.38]}>
-        <boxGeometry args={[0.06, 0.65, 1.6]} />
-        <meshStandardMaterial color="#99bbdd" transparent opacity={0.4} />
-      </mesh>
-      {/* Bumpers */}
-      <mesh position={[2.35, 0.25, 0]}>
-        <boxGeometry args={[0.15, 0.22, 2.0]} />
-        <meshStandardMaterial color="#666666" metalness={0.6} roughness={0.3} />
-      </mesh>
-      <mesh position={[-2.35, 0.25, 0]}>
-        <boxGeometry args={[0.15, 0.22, 2.0]} />
-        <meshStandardMaterial color="#666666" metalness={0.6} roughness={0.3} />
-      </mesh>
-      {(
-        [
-          [1.6, 1.0],
-          [1.6, -1.0],
-          [-1.6, 1.0],
-          [-1.6, -1.0],
-        ] as [number, number][]
-      ).map(([wx, wz], i) => (
-        <group key={`${wx}-${wz}`} position={[wx, 0.36, wz]}>
-          <mesh ref={setWheelRef(i)} rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.36, 0.36, 0.26, 16]} />
-            <meshStandardMaterial color="#111111" roughness={0.9} />
-          </mesh>
-          <mesh rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.22, 0.22, 0.27, 10]} />
-            <meshStandardMaterial
-              color="#999999"
-              metalness={0.85}
-              roughness={0.2}
-            />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
-// ── Lamborghini Car ────────────────────────────────────────────────────────
-function LamborghiniCar({
-  carRef,
-  position,
-  rotation,
-}: {
-  carRef?: React.MutableRefObject<CarState>;
-  position?: [number, number, number];
-  rotation?: number;
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-  const wheelRefs = useRef<THREE.Mesh[]>([]);
-  const setWheelRef = (i: number) => (el: THREE.Mesh | null) => {
-    if (el) wheelRefs.current[i] = el;
-  };
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    if (carRef) {
-      const state = carRef.current;
-      groupRef.current.position.set(state.x, 0, state.z);
-      groupRef.current.rotation.y = state.angle + Math.PI / 2;
-      for (const w of wheelRefs.current)
-        if (w) w.rotation.x -= state.speed * 0.05;
-    }
-  });
-
-  return (
-    <group
-      ref={groupRef}
-      position={carRef ? undefined : position}
-      rotation={carRef ? undefined : [0, rotation ?? 0, 0]}
-    >
-      {/* Ultra-low flat body */}
-      <mesh position={[0, 0.28, 0]} castShadow>
-        <boxGeometry args={[4.8, 0.38, 2.1]} />
-        <meshStandardMaterial color="#ff8800" metalness={0.7} roughness={0.2} />
-      </mesh>
-      {/* Wedge front hood angled */}
-      <mesh position={[1.8, 0.38, 0]} rotation={[0, 0, 0.25]} castShadow>
-        <boxGeometry args={[1.5, 0.12, 2.0]} />
-        <meshStandardMaterial color="#ff7700" metalness={0.7} roughness={0.2} />
-      </mesh>
-      {/* Low angular cabin */}
-      <mesh position={[0, 0.64, 0]} castShadow>
-        <boxGeometry args={[2.0, 0.45, 1.8]} />
-        <meshStandardMaterial
-          color="#cc6600"
-          metalness={0.6}
-          roughness={0.25}
-        />
-      </mesh>
-      {/* Wide rear diffuser */}
-      <mesh position={[-2.2, 0.2, 0]}>
-        <boxGeometry args={[0.5, 0.18, 2.4]} />
-        <meshStandardMaterial color="#222222" metalness={0.8} roughness={0.2} />
-      </mesh>
-      {/* Sharp headlights */}
-      <mesh position={[2.42, 0.36, 0.8]}>
-        <boxGeometry args={[0.1, 0.08, 0.3]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ffff88"
-          emissiveIntensity={5}
-        />
-      </mesh>
-      <mesh position={[2.42, 0.36, -0.8]}>
-        <boxGeometry args={[0.1, 0.08, 0.3]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ffff88"
-          emissiveIntensity={5}
-        />
-      </mesh>
-      {/* Angular taillights */}
-      <mesh position={[-2.42, 0.34, 0.8]}>
-        <boxGeometry args={[0.1, 0.1, 0.45]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#ff0000"
-          emissiveIntensity={3}
-        />
-      </mesh>
-      <mesh position={[-2.42, 0.34, -0.8]}>
-        <boxGeometry args={[0.1, 0.1, 0.45]} />
-        <meshStandardMaterial
-          color="#ff2222"
-          emissive="#ff0000"
-          emissiveIntensity={3}
-        />
-      </mesh>
-      {/* Side air intakes */}
-      <mesh position={[0.5, 0.38, 1.06]}>
-        <boxGeometry args={[0.8, 0.18, 0.06]} />
-        <meshStandardMaterial color="#111111" metalness={0.9} />
-      </mesh>
-      <mesh position={[0.5, 0.38, -1.06]}>
-        <boxGeometry args={[0.8, 0.18, 0.06]} />
-        <meshStandardMaterial color="#111111" metalness={0.9} />
-      </mesh>
-      {/* Windshield very angled */}
-      <mesh position={[1.0, 0.72, 0]} rotation={[0, 0, -0.6]}>
-        <boxGeometry args={[0.06, 0.5, 1.7]} />
-        <meshStandardMaterial color="#88aacc" transparent opacity={0.38} />
-      </mesh>
-      {(
-        [
-          [1.7, 1.08],
-          [1.7, -1.08],
-          [-1.7, 1.08],
-          [-1.7, -1.08],
-        ] as [number, number][]
-      ).map(([wx, wz], i) => (
-        <group key={`${wx}-${wz}`} position={[wx, 0.32, wz]}>
-          <mesh ref={setWheelRef(i)} rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.32, 0.32, 0.3, 16]} />
-            <meshStandardMaterial color="#111111" roughness={0.9} />
-          </mesh>
-          <mesh rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.2, 0.2, 0.31, 10]} />
-            <meshStandardMaterial
-              color="#777777"
-              metalness={0.9}
-              roughness={0.15}
-            />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
-}
-
-// ── Bugatti Car ────────────────────────────────────────────────────────────
-function BugattiCar({
-  carRef,
-  position,
-  rotation,
-}: {
-  carRef?: React.MutableRefObject<CarState>;
-  position?: [number, number, number];
-  rotation?: number;
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-  const wheelRefs = useRef<THREE.Mesh[]>([]);
-  const setWheelRef = (i: number) => (el: THREE.Mesh | null) => {
-    if (el) wheelRefs.current[i] = el;
-  };
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    if (carRef) {
-      const state = carRef.current;
-      groupRef.current.position.set(state.x, 0, state.z);
-      groupRef.current.rotation.y = state.angle + Math.PI / 2;
-      for (const w of wheelRefs.current)
-        if (w) w.rotation.x -= state.speed * 0.05;
-    }
-  });
-
-  return (
-    <group
-      ref={groupRef}
-      position={carRef ? undefined : position}
-      rotation={carRef ? undefined : [0, rotation ?? 0, 0]}
-    >
-      {/* Dark navy hypercar body */}
-      <mesh position={[0, 0.38, 0]} castShadow>
-        <boxGeometry args={[4.7, 0.5, 2.0]} />
-        <meshStandardMaterial
-          color="#0a0e2e"
-          metalness={0.95}
-          roughness={0.1}
-        />
-      </mesh>
-      {/* Fastback cabin */}
-      <mesh position={[0.1, 0.88, 0]} castShadow>
-        <boxGeometry args={[2.3, 0.6, 1.75]} />
-        <meshStandardMaterial
-          color="#080c22"
-          metalness={0.9}
-          roughness={0.12}
-        />
-      </mesh>
-      {/* Horseshoe grille (torus-like with multiple boxes) */}
-      <mesh position={[2.34, 0.45, 0]}>
-        <torusGeometry args={[0.28, 0.06, 8, 16, Math.PI]} />
-        <meshStandardMaterial
-          color="#aaaaaa"
-          metalness={0.95}
-          roughness={0.1}
-        />
-      </mesh>
-      {/* Grille mesh dark center */}
-      <mesh position={[2.32, 0.42, 0]}>
-        <boxGeometry args={[0.06, 0.28, 0.48]} />
-        <meshStandardMaterial color="#050812" metalness={0.9} />
-      </mesh>
-      {/* Massive side air intakes */}
-      <mesh position={[0.4, 0.44, 1.05]}>
-        <boxGeometry args={[1.2, 0.25, 0.07]} />
-        <meshStandardMaterial color="#050812" metalness={0.9} />
-      </mesh>
-      <mesh position={[0.4, 0.44, -1.05]}>
-        <boxGeometry args={[1.2, 0.25, 0.07]} />
-        <meshStandardMaterial color="#050812" metalness={0.9} />
-      </mesh>
-      {/* Quad oval taillights */}
-      <mesh position={[-2.35, 0.5, 0.6]}>
-        <boxGeometry args={[0.08, 0.12, 0.22]} />
-        <meshStandardMaterial
-          color="#ff2200"
-          emissive="#ff1100"
-          emissiveIntensity={3}
-        />
-      </mesh>
-      <mesh position={[-2.35, 0.5, 0.85]}>
-        <boxGeometry args={[0.08, 0.12, 0.22]} />
-        <meshStandardMaterial
-          color="#ff2200"
-          emissive="#ff1100"
-          emissiveIntensity={3}
-        />
-      </mesh>
-      <mesh position={[-2.35, 0.5, -0.6]}>
-        <boxGeometry args={[0.08, 0.12, 0.22]} />
-        <meshStandardMaterial
-          color="#ff2200"
-          emissive="#ff1100"
-          emissiveIntensity={3}
-        />
-      </mesh>
-      <mesh position={[-2.35, 0.5, -0.85]}>
-        <boxGeometry args={[0.08, 0.12, 0.22]} />
-        <meshStandardMaterial
-          color="#ff2200"
-          emissive="#ff1100"
-          emissiveIntensity={3}
-        />
-      </mesh>
-      {/* Headlights */}
-      <mesh position={[2.3, 0.55, 0.7]}>
-        <boxGeometry args={[0.1, 0.08, 0.35]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ccddff"
-          emissiveIntensity={4}
-        />
-      </mesh>
-      <mesh position={[2.3, 0.55, -0.7]}>
-        <boxGeometry args={[0.1, 0.08, 0.35]} />
-        <meshStandardMaterial
-          color="#ffffff"
-          emissive="#ccddff"
-          emissiveIntensity={4}
-        />
-      </mesh>
-      {/* Windshield */}
-      <mesh position={[1.1, 0.9, 0]} rotation={[0, 0, -0.4]}>
-        <boxGeometry args={[0.06, 0.62, 1.65]} />
-        <meshStandardMaterial color="#7799cc" transparent opacity={0.42} />
-      </mesh>
-      {/* Blue accent stripe */}
-      <mesh position={[0, 0.64, 0]}>
-        <boxGeometry args={[4.6, 0.04, 0.08]} />
-        <meshStandardMaterial
-          color="#4466ff"
-          emissive="#2244ff"
-          emissiveIntensity={1}
-        />
-      </mesh>
-      {(
-        [
-          [1.65, 1.05],
-          [1.65, -1.05],
-          [-1.65, 1.05],
-          [-1.65, -1.05],
-        ] as [number, number][]
-      ).map(([wx, wz], i) => (
-        <group key={`${wx}-${wz}`} position={[wx, 0.35, wz]}>
-          <mesh ref={setWheelRef(i)} rotation={[0, 0, Math.PI / 2]} castShadow>
-            <cylinderGeometry args={[0.35, 0.35, 0.28, 16]} />
-            <meshStandardMaterial color="#111111" roughness={0.9} />
-          </mesh>
-          <mesh rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.21, 0.21, 0.29, 12]} />
-            <meshStandardMaterial
-              color="#888888"
-              metalness={0.95}
-              roughness={0.1}
-            />
-          </mesh>
-        </group>
-      ))}
-    </group>
-  );
 }
 
 // ── Random 3D Shape Cars (parked decoration) ───────────────────────────────
@@ -723,7 +129,6 @@ function RandomShapeCar({
           </mesh>
         </>
       )}
-      {/* Wheels for all shapes */}
       {(
         [
           [1.2, 0.9],
@@ -746,38 +151,186 @@ function RandomShapeCar({
   );
 }
 
-// ── Car renderer helper ────────────────────────────────────────────────────
-function CarMesh({
-  brand,
+// ── Generic Car ───────────────────────────────────────────────────────────
+function GenericCar({
   carRef,
   position,
   rotation,
+  color,
 }: {
-  brand: CarBrand;
   carRef?: React.MutableRefObject<CarState>;
   position?: [number, number, number];
   rotation?: number;
+  color?: string;
 }) {
-  if (brand === "BMW")
-    return <BMWCar carRef={carRef} position={position} rotation={rotation} />;
-  if (brand === "Audi")
-    return <AudiCar carRef={carRef} position={position} rotation={rotation} />;
-  if (brand === "Lamborghini")
-    return (
-      <LamborghiniCar carRef={carRef} position={position} rotation={rotation} />
-    );
-  return <BugattiCar carRef={carRef} position={position} rotation={rotation} />;
+  const bodyColor = color ?? "#4488cc";
+  const groupRef = useRef<THREE.Group>(null);
+  const wheelRefs = useRef<THREE.Mesh[]>([]);
+  const setWheelRef = (i: number) => (el: THREE.Mesh | null) => {
+    if (el) wheelRefs.current[i] = el;
+  };
+
+  useFrame(() => {
+    if (!groupRef.current) return;
+    if (carRef) {
+      const state = carRef.current;
+      groupRef.current.position.set(state.x, 0, state.z);
+      groupRef.current.rotation.y = state.angle + Math.PI / 2;
+      for (const w of wheelRefs.current)
+        if (w) w.rotation.x -= state.speed * 0.05;
+    }
+  });
+
+  return (
+    <group
+      ref={groupRef}
+      position={carRef ? undefined : position}
+      rotation={carRef ? undefined : [0, rotation ?? 0, 0]}
+    >
+      {/* Car body */}
+      <mesh position={[0, 0.45, 0]} castShadow>
+        <boxGeometry args={[4.5, 0.6, 2.0]} />
+        <meshStandardMaterial
+          color={bodyColor}
+          metalness={0.7}
+          roughness={0.25}
+        />
+      </mesh>
+      {/* Cabin */}
+      <mesh position={[0.1, 0.98, 0]} castShadow>
+        <boxGeometry args={[2.4, 0.65, 1.72]} />
+        <meshStandardMaterial
+          color={bodyColor}
+          metalness={0.6}
+          roughness={0.3}
+        />
+      </mesh>
+      {/* Hood */}
+      <mesh position={[1.6, 0.55, 0]} castShadow>
+        <boxGeometry args={[1.4, 0.12, 1.9]} />
+        <meshStandardMaterial
+          color={bodyColor}
+          metalness={0.7}
+          roughness={0.25}
+        />
+      </mesh>
+      {/* Front bumper */}
+      <mesh position={[2.32, 0.28, 0]} castShadow>
+        <boxGeometry args={[0.18, 0.28, 2.1]} />
+        <meshStandardMaterial color="#5a6070" metalness={0.5} roughness={0.4} />
+      </mesh>
+      {/* Rear bumper */}
+      <mesh position={[-2.32, 0.28, 0]} castShadow>
+        <boxGeometry args={[0.18, 0.28, 2.1]} />
+        <meshStandardMaterial color="#5a6070" metalness={0.5} roughness={0.4} />
+      </mesh>
+      {/* Windshield */}
+      <mesh position={[1.18, 0.96, 0]} rotation={[0, 0, -0.42]}>
+        <boxGeometry args={[0.06, 0.68, 1.62]} />
+        <meshStandardMaterial
+          color="#88aacc"
+          transparent
+          opacity={0.45}
+          metalness={0.1}
+          roughness={0.05}
+        />
+      </mesh>
+      {/* Rear window */}
+      <mesh position={[-1.08, 0.96, 0]} rotation={[0, 0, 0.42]}>
+        <boxGeometry args={[0.06, 0.62, 1.58]} />
+        <meshStandardMaterial
+          color="#88aacc"
+          transparent
+          opacity={0.4}
+          metalness={0.1}
+          roughness={0.05}
+        />
+      </mesh>
+      {/* Headlights */}
+      <mesh position={[2.24, 0.52, 0.72]}>
+        <boxGeometry args={[0.12, 0.15, 0.32]} />
+        <meshStandardMaterial
+          color="#ffffff"
+          emissive="#ffffcc"
+          emissiveIntensity={3}
+        />
+      </mesh>
+      <mesh position={[2.24, 0.52, -0.72]}>
+        <boxGeometry args={[0.12, 0.15, 0.32]} />
+        <meshStandardMaterial
+          color="#ffffff"
+          emissive="#ffffcc"
+          emissiveIntensity={3}
+        />
+      </mesh>
+      {/* Taillights */}
+      <mesh position={[-2.24, 0.52, 0.72]}>
+        <boxGeometry args={[0.12, 0.14, 0.44]} />
+        <meshStandardMaterial
+          color="#ff2222"
+          emissive="#ff0000"
+          emissiveIntensity={2}
+        />
+      </mesh>
+      <mesh position={[-2.24, 0.52, -0.72]}>
+        <boxGeometry args={[0.12, 0.14, 0.44]} />
+        <meshStandardMaterial
+          color="#ff2222"
+          emissive="#ff0000"
+          emissiveIntensity={2}
+        />
+      </mesh>
+      {/* Undercarriage */}
+      <mesh position={[0, 0.1, 0]}>
+        <boxGeometry args={[4.2, 0.1, 1.8]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
+      </mesh>
+      {/* Wheels */}
+      {(
+        [
+          [1.55, 1.05],
+          [1.55, -1.05],
+          [-1.55, 1.05],
+          [-1.55, -1.05],
+        ] as [number, number][]
+      ).map(([wx, wz], i) => (
+        <group key={`${wx}-${wz}`} position={[wx, 0.38, wz]}>
+          <mesh ref={setWheelRef(i)} rotation={[0, 0, Math.PI / 2]} castShadow>
+            <cylinderGeometry args={[0.38, 0.38, 0.25, 16]} />
+            <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
+          </mesh>
+          <mesh rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.24, 0.24, 0.26, 8]} />
+            <meshStandardMaterial
+              color="#888888"
+              metalness={0.8}
+              roughness={0.3}
+            />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
 }
 
 // ── Parked cars data ───────────────────────────────────────────────────────
-const BRANDS: CarBrand[] = ["BMW", "Audi", "Lamborghini", "Bugatti"];
+const CAR_COLORS = [
+  "#cc2222",
+  "#2244cc",
+  "#228844",
+  "#cc8822",
+  "#882299",
+  "#cccc22",
+  "#226688",
+  "#cc4488",
+];
 const PARKED_CARS = (() => {
   const rng = makeRng(77);
   const cars: Array<{
     x: number;
     z: number;
     rotation: number;
-    brand: CarBrand;
+    color: string;
     shapeVariant: boolean;
   }> = [];
   for (let i = 0; i < 20; i++) {
@@ -787,9 +340,9 @@ const PARKED_CARS = (() => {
       x = (rng() - 0.5) * 180;
       z = (rng() - 0.5) * 180;
     } while (Math.abs(x) < 25 && Math.abs(z) < 25);
-    const brand = BRANDS[Math.floor(rng() * 4)];
+    const color = CAR_COLORS[Math.floor(rng() * CAR_COLORS.length)];
     const shapeVariant = rng() > 0.65;
-    cars.push({ x, z, rotation: rng() * Math.PI * 2, brand, shapeVariant });
+    cars.push({ x, z, rotation: rng() * Math.PI * 2, color, shapeVariant });
   }
   return cars;
 })();
@@ -806,9 +359,9 @@ function ParkedCars() {
             colorSeed={i + 100}
           />
         ) : (
-          <CarMesh
+          <GenericCar
             key={`c-${c.x.toFixed(1)}-${c.z.toFixed(1)}`}
-            brand={c.brand}
+            color={c.color}
             position={[c.x, 0, c.z]}
             rotation={c.rotation}
           />
@@ -847,7 +400,16 @@ const BUILDING_DATA = (() => {
     h: number;
     color: string;
   }> = [];
-  const colors = ["#9a9888", "#d4c8b0", "#3a3a3a", "#c8b898", "#8a6858"];
+  const colors = [
+    "#c4b89a",
+    "#d4c8b4",
+    "#4a5560",
+    "#e8dcc8",
+    "#8a7868",
+    "#b8a890",
+    "#6a7880",
+    "#c8b8a0",
+  ];
   const rng = makeRng(42);
   for (let i = 0; i < 40; i++) {
     let x = 0;
@@ -1328,6 +890,383 @@ function PlayerCharacter({
   );
 }
 
+// ── Gangs Data ─────────────────────────────────────────────────────────────
+const GANGS = [
+  {
+    name: "Grove Street",
+    color: "#22aa44",
+    territory: "South LS",
+    members: 32,
+    status: "Allied",
+  },
+  {
+    name: "Ballas",
+    color: "#9933cc",
+    territory: "East LS",
+    members: 28,
+    status: "Enemy",
+  },
+  {
+    name: "Vagos",
+    color: "#ffcc00",
+    territory: "East Vinewood",
+    members: 24,
+    status: "Neutral",
+  },
+  {
+    name: "Aztecas",
+    color: "#00ccff",
+    territory: "El Corona",
+    members: 19,
+    status: "Neutral",
+  },
+  {
+    name: "Triads",
+    color: "#ff4444",
+    territory: "Chinatown",
+    members: 15,
+    status: "Enemy",
+  },
+  {
+    name: "Mafia",
+    color: "#888888",
+    territory: "Downtown",
+    members: 22,
+    status: "Neutral",
+  },
+  {
+    name: "Russian Mob",
+    color: "#4466ff",
+    territory: "Portola Drive",
+    members: 18,
+    status: "Enemy",
+  },
+  {
+    name: "Bikers",
+    color: "#ff8800",
+    territory: "Sandy Shores",
+    members: 21,
+    status: "Neutral",
+  },
+];
+
+// ── Missions Data ──────────────────────────────────────────────────────────
+const MISSIONS = [
+  { id: 0, title: "Steal a Car", desc: "Enter any vehicle", reward: "$500" },
+  {
+    id: 1,
+    title: "Rob the Bank",
+    desc: "Reach the Bank building",
+    reward: "$5,000",
+  },
+  {
+    id: 2,
+    title: "Gang Takedown",
+    desc: "Reach Grove Street territory",
+    reward: "$2,000",
+  },
+];
+
+// ── Bot Car ────────────────────────────────────────────────────────────────
+const BOT_STARTS = [
+  { x: 30, z: 20 },
+  { x: -40, z: 30 },
+  { x: 50, z: -50 },
+  { x: -20, z: -60 },
+];
+const BOT_COLORS = ["#ff2244", "#22ffaa", "#ff8800", "#44aaff"];
+
+function BotCar({
+  startX,
+  startZ,
+  color,
+}: { startX: number; startZ: number; color: string }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const posRef = useRef(new THREE.Vector3(startX, 0, startZ));
+  const targetRef = useRef(new THREE.Vector3(startX + 20, 0, startZ + 15));
+  const angleRef = useRef(0);
+  const rng = useRef(makeRng(Math.abs(startX * 37 + startZ * 13) | 0));
+
+  useFrame((_, delta) => {
+    if (!groupRef.current) return;
+    const dt = Math.min(delta, 0.05);
+    const dir = new THREE.Vector3().subVectors(
+      targetRef.current,
+      posRef.current,
+    );
+    const dist = dir.length();
+    if (dist < 3) {
+      const r = rng.current;
+      targetRef.current.set((r() - 0.5) * 100, 0, (r() - 0.5) * 100);
+    } else {
+      dir.normalize();
+      posRef.current.addScaledVector(dir, 8 * dt);
+      angleRef.current = Math.atan2(dir.x, dir.z);
+    }
+    groupRef.current.position.copy(posRef.current);
+    groupRef.current.rotation.y = angleRef.current;
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* Body */}
+      <mesh position={[0, 0.55, 0]} castShadow>
+        <boxGeometry args={[3, 0.7, 1.6]} />
+        <meshStandardMaterial color={color} metalness={0.6} roughness={0.3} />
+      </mesh>
+      {/* Cabin */}
+      <mesh position={[0, 1.05, 0]} castShadow>
+        <boxGeometry args={[1.8, 0.6, 1.4]} />
+        <meshStandardMaterial color={color} metalness={0.5} roughness={0.4} />
+      </mesh>
+      {/* Wheels */}
+      {(
+        [
+          [-1.1, 0.28, 0.85],
+          [1.1, 0.28, 0.85],
+          [-1.1, 0.28, -0.85],
+          [1.1, 0.28, -0.85],
+        ] as [number, number, number][]
+      ).map((pos) => (
+        <mesh
+          key={`${pos[0]}-${pos[2]}`}
+          position={pos}
+          rotation={[0, Math.PI / 2, 0]}
+          castShadow
+        >
+          <cylinderGeometry args={[0.28, 0.28, 0.22, 10]} />
+          <meshStandardMaterial color="#222" roughness={0.9} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+// ── Bank Building ──────────────────────────────────────────────────────────
+function Bank3D() {
+  return (
+    <group position={[0, 0, -50]}>
+      {/* Main body */}
+      <mesh position={[0, 6, 0]} castShadow receiveShadow>
+        <boxGeometry args={[18, 12, 14]} />
+        <meshStandardMaterial color="#c8b878" roughness={0.7} />
+      </mesh>
+      {/* Columns */}
+      {([-6, -2, 2, 6] as number[]).map((cx) => (
+        <mesh key={cx} position={[cx, 6, 7.2]} castShadow>
+          <cylinderGeometry args={[0.4, 0.4, 12, 8]} />
+          <meshStandardMaterial color="#e8d8a0" roughness={0.6} />
+        </mesh>
+      ))}
+      {/* Vault door hint */}
+      <mesh position={[0, 4, 7.1]}>
+        <boxGeometry args={[3, 4, 0.3]} />
+        <meshStandardMaterial color="#333" metalness={0.8} roughness={0.3} />
+      </mesh>
+      {/* Roof ledge */}
+      <mesh position={[0, 12.4, 0]} castShadow>
+        <boxGeometry args={[20, 0.8, 16]} />
+        <meshStandardMaterial color="#b8a868" roughness={0.8} />
+      </mesh>
+      {/* Sign */}
+      <mesh position={[0, 15, 7.1]}>
+        <boxGeometry args={[10, 2, 0.2]} />
+        <meshStandardMaterial
+          color="#ffcc00"
+          emissive="#ffcc00"
+          emissiveIntensity={0.4}
+        />
+      </mesh>
+      {/* Steps */}
+      <mesh position={[0, 0.2, 8.5]} receiveShadow>
+        <boxGeometry args={[14, 0.4, 3]} />
+        <meshStandardMaterial color="#d4c898" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+// ── House ──────────────────────────────────────────────────────────────────
+const HOUSE_POSITIONS: [number, number, number][] = [
+  [25, 0, 25],
+  [-25, 0, 25],
+  [25, 0, -25],
+  [-60, 0, 10],
+  [40, 0, 40],
+  [-35, 0, -40],
+];
+
+function House3D({ x, z }: { x: number; z: number }) {
+  return (
+    <group position={[x, 0, z]}>
+      {/* Walls */}
+      <mesh position={[0, 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[6, 4, 6]} />
+        <meshStandardMaterial color="#d4a574" roughness={0.85} />
+      </mesh>
+      {/* Roof */}
+      <mesh position={[0, 5.5, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[4.8, 3, 4]} />
+        <meshStandardMaterial color="#8b4513" roughness={0.9} />
+      </mesh>
+      {/* Door */}
+      <mesh position={[0, 1.1, 3.05]}>
+        <boxGeometry args={[1.2, 2.2, 0.15]} />
+        <meshStandardMaterial color="#5c3317" roughness={0.9} />
+      </mesh>
+      {/* Windows */}
+      <mesh position={[1.6, 2.2, 3.05]}>
+        <boxGeometry args={[1.0, 1.0, 0.1]} />
+        <meshStandardMaterial
+          color="#88ccff"
+          emissive="#88ccff"
+          emissiveIntensity={0.3}
+        />
+      </mesh>
+      <mesh position={[-1.6, 2.2, 3.05]}>
+        <boxGeometry args={[1.0, 1.0, 0.1]} />
+        <meshStandardMaterial
+          color="#88ccff"
+          emissive="#88ccff"
+          emissiveIntensity={0.3}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function Houses() {
+  return (
+    <>
+      {HOUSE_POSITIONS.map(([x, , z]) => (
+        <House3D key={`${x}-${z}`} x={x} z={z} />
+      ))}
+    </>
+  );
+}
+
+// ── City Decorations ───────────────────────────────────────────────────────
+function CityDecorations() {
+  return (
+    <>
+      {/* Water tower at (15, 0, 15) */}
+      <group position={[15, 0, 15]}>
+        {/* Tank */}
+        <mesh position={[0, 6, 0]} castShadow>
+          <cylinderGeometry args={[1.2, 1.2, 4, 12]} />
+          <meshStandardMaterial color="#555" roughness={0.8} />
+        </mesh>
+        {/* Legs */}
+        {(
+          [
+            [-0.8, 0.8],
+            [0.8, 0.8],
+            [-0.8, -0.8],
+            [0.8, -0.8],
+          ] as [number, number][]
+        ).map(([lx, lz]) => (
+          <mesh key={`${lx}-${lz}`} position={[lx, 3, lz]} castShadow>
+            <boxGeometry args={[0.15, 6, 0.15]} />
+            <meshStandardMaterial color="#444" roughness={0.9} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Billboard 1 */}
+      <group position={[-15, 0, 20]}>
+        <mesh position={[0, 4, 0]} castShadow>
+          <boxGeometry args={[0.3, 8, 0.3]} />
+          <meshStandardMaterial color="#666" roughness={0.8} />
+        </mesh>
+        <mesh position={[0, 8.5, 0]}>
+          <boxGeometry args={[6, 3, 0.2]} />
+          <meshStandardMaterial
+            color="#ff4422"
+            emissive="#ff2200"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+      </group>
+
+      {/* Billboard 2 */}
+      <group position={[30, 0, -10]}>
+        <mesh position={[0, 4, 0]} castShadow>
+          <boxGeometry args={[0.3, 8, 0.3]} />
+          <meshStandardMaterial color="#666" roughness={0.8} />
+        </mesh>
+        <mesh position={[0, 8.5, 0]}>
+          <boxGeometry args={[6, 3, 0.2]} />
+          <meshStandardMaterial
+            color="#00aaff"
+            emissive="#0066ff"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+      </group>
+
+      {/* Street Lamps */}
+      {(
+        [
+          [10, 5],
+          [-10, 5],
+          [0, -10],
+          [20, -20],
+          [-20, -5],
+        ] as [number, number][]
+      ).map(([lx, lz]) => (
+        <group key={`${lx}-${lz}`} position={[lx, 0, lz]}>
+          <mesh position={[0, 3, 0]} castShadow>
+            <boxGeometry args={[0.2, 6, 0.2]} />
+            <meshStandardMaterial color="#777" roughness={0.7} />
+          </mesh>
+          <mesh position={[0, 6.3, 0]}>
+            <sphereGeometry args={[0.35, 8, 8]} />
+            <meshStandardMaterial
+              color="#ffffaa"
+              emissive="#ffff44"
+              emissiveIntensity={3}
+            />
+          </mesh>
+          <pointLight
+            position={[lx, 6.3, lz]}
+            color="#ffff88"
+            intensity={4}
+            distance={20}
+          />
+        </group>
+      ))}
+
+      {/* Park Benches near (0, 0, 20) */}
+      {(
+        [
+          [0, 20],
+          [3, 22],
+          [-3, 22],
+        ] as [number, number][]
+      ).map(([bx, bz]) => (
+        <group key={`${bx}-${bz}`} position={[bx, 0, bz]}>
+          <mesh position={[0, 0.35, 0]}>
+            <boxGeometry args={[1.8, 0.12, 0.5]} />
+            <meshStandardMaterial color="#8b4513" roughness={0.9} />
+          </mesh>
+          <mesh position={[0, 0.6, 0.2]}>
+            <boxGeometry args={[1.8, 0.5, 0.1]} />
+            <meshStandardMaterial color="#8b4513" roughness={0.9} />
+          </mesh>
+          <mesh position={[-0.8, 0.2, 0]}>
+            <boxGeometry args={[0.1, 0.4, 0.5]} />
+            <meshStandardMaterial color="#666" roughness={0.8} />
+          </mesh>
+          <mesh position={[0.8, 0.2, 0]}>
+            <boxGeometry args={[0.1, 0.4, 0.5]} />
+            <meshStandardMaterial color="#666" roughness={0.8} />
+          </mesh>
+        </group>
+      ))}
+    </>
+  );
+}
+
 // ── Camera Controller ──────────────────────────────────────────────────────
 function CameraController({
   carRef,
@@ -1485,18 +1424,18 @@ function Scene({
   inCar,
   cameraMode,
   playerPosRef,
-  selectedBrand,
   nearestParkedIdx,
   onlinePlayers,
+  carColor,
 }: {
   carRef: React.MutableRefObject<CarState>;
   controlsRef: React.MutableRefObject<Controls>;
   inCar: boolean;
   cameraMode: CameraMode;
   playerPosRef: React.MutableRefObject<{ x: number; z: number; angle: number }>;
-  selectedBrand: CarBrand;
   nearestParkedIdx: number | null;
   onlinePlayers: PlayerState[];
+  carColor: string;
 }) {
   const { scene } = useThree();
   useEffect(() => {
@@ -1533,7 +1472,7 @@ function Scene({
       <NPCs />
       <RealOnlinePlayers players={onlinePlayers} />
       {inCar ? (
-        <CarMesh brand={selectedBrand} carRef={carRef} />
+        <GenericCar carRef={carRef} color={carColor} />
       ) : (
         <PlayerCharacter
           playerPosRef={playerPosRef}
@@ -1548,6 +1487,17 @@ function Scene({
           active={true}
         />
       )}
+      <Bank3D />
+      <Houses />
+      <CityDecorations />
+      {BOT_STARTS.map((b, i) => (
+        <BotCar
+          key={`bot-${b.x}-${b.z}`}
+          startX={b.x}
+          startZ={b.z}
+          color={BOT_COLORS[i % BOT_COLORS.length]}
+        />
+      ))}
       <CameraController
         carRef={carRef}
         playerPosRef={playerPosRef}
@@ -1786,7 +1736,7 @@ export default function App() {
   const playerPosRef = useRef({ x: 5, z: 5, angle: 0 });
 
   const [inCar, setInCar] = useState(false);
-  const [selectedBrand, setSelectedBrand] = useState<CarBrand>("BMW");
+  const [carColor, setCarColor] = useState("#4488cc");
   const [cameraMode, setCameraMode] = useState<CameraMode>("follow");
   const [nearestParkedIdx, setNearestParkedIdx] = useState<number | null>(null);
   const [canEnterCar, setCanEnterCar] = useState(false);
@@ -1794,7 +1744,10 @@ export default function App() {
   // ── Multiplayer state ────────────────────────────────────────────────────
   const { actor: _rawActor } = useActor();
   const actor = _rawActor as import("./backend.d").backendInterface | null;
-  const [lobbyVisible, setLobbyVisible] = useState(true);
+  const [gameMode, setGameMode] = useState<"select" | "offline" | "online">(
+    "select",
+  );
+  const [lobbyVisible, setLobbyVisible] = useState(false);
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
@@ -1804,6 +1757,14 @@ export default function App() {
   const [joinCodeInput, setJoinCodeInput] = useState("");
   const [lobbyTab, setLobbyTab] = useState<"create" | "join">("create");
   const [createdCode, setCreatedCode] = useState<string | null>(null);
+
+  // ── Gangs panel ──────────────────────────────────────────────────────────
+  const [gangsOpen, setGangsOpen] = useState(false);
+
+  // ── Mission state ────────────────────────────────────────────────────────
+  const [activeMission, setActiveMission] = useState(0);
+  const [missionComplete, setMissionComplete] = useState(false);
+  const [missionReward, setMissionReward] = useState<string | null>(null);
 
   // Find nearest parked car from player position
   const findNearestCar = useCallback(() => {
@@ -1841,12 +1802,30 @@ export default function App() {
     carRef.current.z = c.z;
     carRef.current.angle = c.rotation - Math.PI / 2;
     carRef.current.speed = 0;
+    const color = c.color ?? "#4488cc";
+    setCarColor(color);
     setInCar(true);
+    // Mission 0: Steal a Car
+    setActiveMission((prev) => {
+      if (prev === 0) {
+        setMissionComplete(true);
+        setMissionReward("$500");
+        setTimeout(() => {
+          setMissionComplete(false);
+          setMissionReward(null);
+          setActiveMission(1);
+        }, 3000);
+      }
+      return prev;
+    });
   }, [canEnterCar, nearestParkedIdx]);
 
   const exitCar = useCallback(() => {
-    playerPosRef.current.x = carRef.current.x + 2.5;
-    playerPosRef.current.z = carRef.current.z + 2.5;
+    const angle = carRef.current.angle;
+    playerPosRef.current.x =
+      carRef.current.x + Math.cos(angle + Math.PI / 2) * 3;
+    playerPosRef.current.z =
+      carRef.current.z + Math.sin(angle + Math.PI / 2) * 3;
     playerPosRef.current.angle = carRef.current.angle;
     carRef.current.speed = 0;
     setInCar(false);
@@ -1892,11 +1871,17 @@ export default function App() {
 
   // ── Multiplayer lobby handlers ───────────────────────────────────────────
   const handleCreateRoom = useCallback(async () => {
-    if (!actor || !playerName.trim()) return;
+    if (!actor) {
+      setLobbyError("Connecting to server... Please try again.");
+      return;
+    }
+    const name =
+      playerName.trim() || `Player${Math.floor(100 + Math.random() * 900)}`;
+    setPlayerName(name);
     setLobbyLoading(true);
     setLobbyError(null);
     try {
-      const code = await actor.createRoom(playerName.trim());
+      const code = await actor.createRoom(name);
       setCreatedCode(code);
       setRoomCode(code);
       const me = await actor.getMyPlayer();
@@ -1909,14 +1894,14 @@ export default function App() {
   }, [actor, playerName]);
 
   const handleJoinRoom = useCallback(async () => {
-    if (!actor || !playerName.trim() || !joinCodeInput.trim()) return;
+    if (!actor || !joinCodeInput.trim()) return;
+    const name =
+      playerName.trim() || `Player${Math.floor(100 + Math.random() * 900)}`;
+    setPlayerName(name);
     setLobbyLoading(true);
     setLobbyError(null);
     try {
-      const ok = await actor.joinRoom(
-        joinCodeInput.trim().toUpperCase(),
-        playerName.trim(),
-      );
+      const ok = await actor.joinRoom(joinCodeInput.trim().toUpperCase(), name);
       if (!ok) {
         setLobbyError("Room not found. Check the code.");
         return;
@@ -1972,18 +1957,9 @@ export default function App() {
     };
   }, [lobbyVisible, roomCode, actor, inCar]);
 
-  const BRAND_COLORS: Record<CarBrand, string> = {
-    BMW: "#4488cc",
-    Audi: "#aaaaaa",
-    Lamborghini: "#ff8800",
-    Bugatti: "#4444cc",
-  };
-
   const CAM_BUTTONS: { mode: CameraMode; icon: string; label: string }[] = [
     { mode: "follow", icon: "🔄", label: "Follow" },
     { mode: "front", icon: "👁️", label: "Front" },
-    { mode: "left", icon: "◀", label: "Left" },
-    { mode: "right", icon: "▶", label: "Right" },
     { mode: "top", icon: "⬆", label: "Top" },
   ];
 
@@ -1998,6 +1974,109 @@ export default function App() {
         touchAction: "none",
       }}
     >
+      {/* Mode Selection Screen */}
+      {gameMode === "select" && (
+        <div
+          data-ocid="mode.select"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 100,
+            background:
+              "linear-gradient(180deg, #0a0a0f 0%, #14141e 60%, #0a0a0f 100%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "monospace",
+            color: "#fff",
+            padding: 24,
+          }}
+        >
+          <div
+            style={{
+              marginBottom: 8,
+              fontSize: 11,
+              color: "#ff4444",
+              letterSpacing: 6,
+            }}
+          >
+            Rockstar Games Presents
+          </div>
+          <div
+            style={{
+              fontSize: 48,
+              fontWeight: 900,
+              letterSpacing: 4,
+              color: "#ffcc00",
+              textShadow: "0 0 40px #ff880088",
+              marginBottom: 4,
+            }}
+          >
+            URBAN CHAOS
+          </div>
+          <div
+            style={{
+              fontSize: 13,
+              color: "#88aacc",
+              marginBottom: 40,
+              letterSpacing: 2,
+            }}
+          >
+            SELECT MODE
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+              width: "100%",
+              maxWidth: 320,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setGameMode("offline")}
+              style={{
+                padding: "18px 0",
+                background: "rgba(255,200,0,0.15)",
+                border: "2px solid #ffcc00",
+                borderRadius: 10,
+                color: "#ffcc00",
+                fontSize: 18,
+                fontWeight: 700,
+                letterSpacing: 3,
+                cursor: "pointer",
+                fontFamily: "monospace",
+              }}
+            >
+              🎮 OFFLINE
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setGameMode("online");
+                setLobbyVisible(true);
+              }}
+              style={{
+                padding: "18px 0",
+                background: "rgba(0,200,255,0.15)",
+                border: "2px solid #00ccff",
+                borderRadius: 10,
+                color: "#00ccff",
+                fontSize: 18,
+                fontWeight: 700,
+                letterSpacing: 3,
+                cursor: "pointer",
+                fontFamily: "monospace",
+              }}
+            >
+              🌐 ONLINE
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Multiplayer Lobby Overlay */}
       {lobbyVisible && (
         <div
@@ -2063,43 +2142,6 @@ export default function App() {
               maxWidth: 380,
             }}
           >
-            {/* Player name */}
-            <div style={{ marginBottom: 20 }}>
-              <label
-                htmlFor="lobby-player-name"
-                style={{
-                  fontSize: 11,
-                  color: "#88aacc",
-                  letterSpacing: 2,
-                  display: "block",
-                  marginBottom: 6,
-                }}
-              >
-                PLAYER NAME
-              </label>
-              <input
-                id="lobby-player-name"
-                data-ocid="lobby.input"
-                type="text"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Enter your name..."
-                maxLength={20}
-                style={{
-                  width: "100%",
-                  background: "rgba(255,255,255,0.07)",
-                  border: "1px solid rgba(255,200,0,0.4)",
-                  borderRadius: 6,
-                  padding: "10px 14px",
-                  color: "#fff",
-                  fontFamily: "monospace",
-                  fontSize: 15,
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
-
             {/* Tab selector */}
             <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
               <button
@@ -2177,24 +2219,26 @@ export default function App() {
                     type="button"
                     data-ocid="lobby.create.primary_button"
                     onClick={handleCreateRoom}
-                    disabled={!playerName.trim() || lobbyLoading}
+                    disabled={lobbyLoading || !actor}
                     style={{
                       width: "100%",
                       padding: "12px 0",
-                      background: playerName.trim()
-                        ? "rgba(255,200,0,0.25)"
-                        : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${playerName.trim() ? "#ffcc00" : "rgba(255,255,255,0.1)"}`,
+                      background: "rgba(255,200,0,0.25)",
+                      border: "1px solid #ffcc00",
                       borderRadius: 8,
-                      color: playerName.trim() ? "#ffcc00" : "#444",
+                      color: "#ffcc00",
                       fontFamily: "monospace",
                       fontSize: 14,
                       letterSpacing: 2,
-                      cursor: playerName.trim() ? "pointer" : "not-allowed",
+                      cursor: "pointer",
                       marginBottom: 12,
                     }}
                   >
-                    {lobbyLoading ? "CREATING..." : "CREATE ROOM"}
+                    {lobbyLoading
+                      ? "CREATING..."
+                      : !actor
+                        ? "CONNECTING..."
+                        : "CREATE ROOM"}
                   </button>
                 )}
               </div>
@@ -2229,29 +2273,20 @@ export default function App() {
                   type="button"
                   data-ocid="lobby.join.primary_button"
                   onClick={handleJoinRoom}
-                  disabled={
-                    !playerName.trim() || !joinCodeInput.trim() || lobbyLoading
-                  }
+                  disabled={!joinCodeInput.trim() || lobbyLoading}
                   style={{
                     width: "100%",
                     padding: "12px 0",
-                    background:
-                      playerName.trim() && joinCodeInput.trim()
-                        ? "rgba(0,200,255,0.2)"
-                        : "rgba(255,255,255,0.04)",
-                    border: `1px solid ${playerName.trim() && joinCodeInput.trim() ? "#00ccff" : "rgba(255,255,255,0.1)"}`,
+                    background: joinCodeInput.trim()
+                      ? "rgba(0,200,255,0.2)"
+                      : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${joinCodeInput.trim() ? "#00ccff" : "rgba(255,255,255,0.1)"}`,
                     borderRadius: 8,
-                    color:
-                      playerName.trim() && joinCodeInput.trim()
-                        ? "#00ccff"
-                        : "#444",
+                    color: joinCodeInput.trim() ? "#00ccff" : "#444",
                     fontFamily: "monospace",
                     fontSize: 14,
                     letterSpacing: 2,
-                    cursor:
-                      playerName.trim() && joinCodeInput.trim()
-                        ? "pointer"
-                        : "not-allowed",
+                    cursor: joinCodeInput.trim() ? "pointer" : "not-allowed",
                   }}
                 >
                   {lobbyLoading ? "JOINING..." : "JOIN ROOM"}
@@ -2323,14 +2358,267 @@ export default function App() {
           inCar={inCar}
           cameraMode={cameraMode}
           playerPosRef={playerPosRef}
-          selectedBrand={selectedBrand}
           nearestParkedIdx={nearestParkedIdx}
           onlinePlayers={onlinePlayers}
+          carColor={carColor}
         />
       </Canvas>
 
       {/* Speed HUD top-left */}
       <SpeedHUD carRef={carRef} inCar={inCar} />
+
+      {/* Gangs Button */}
+      {gameMode !== "select" && (
+        <button
+          type="button"
+          data-ocid="gangs.open_modal_button"
+          onClick={() => setGangsOpen(true)}
+          style={{
+            position: "absolute",
+            top: 120,
+            left: 16,
+            background: "rgba(0,0,0,0.75)",
+            border: "1px solid #ff4444",
+            borderRadius: 8,
+            color: "#ff4444",
+            fontFamily: "monospace",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: 2,
+            padding: "7px 14px",
+            cursor: "pointer",
+            backdropFilter: "blur(4px)",
+            pointerEvents: "auto",
+          }}
+        >
+          🔫 GANGS
+        </button>
+      )}
+
+      {/* Gangs Panel */}
+      {gangsOpen && gameMode !== "select" && (
+        <div
+          data-ocid="gangs.panel"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 90,
+            background: "rgba(0,0,0,0.92)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            flexDirection: "column",
+            fontFamily: "monospace",
+            color: "#fff",
+            padding: 24,
+            overflowY: "auto",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 20,
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#ff4444",
+                  letterSpacing: 4,
+                  marginBottom: 4,
+                }}
+              >
+                URBAN CHAOS
+              </div>
+              <div
+                style={{
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: "#ffcc00",
+                  letterSpacing: 3,
+                }}
+              >
+                🔫 GANG TERRITORIES
+              </div>
+            </div>
+            <button
+              type="button"
+              data-ocid="gangs.close_button"
+              onClick={() => setGangsOpen(false)}
+              style={{
+                background: "rgba(255,68,68,0.2)",
+                border: "1px solid #ff4444",
+                borderRadius: 8,
+                color: "#ff4444",
+                fontFamily: "monospace",
+                fontSize: 14,
+                padding: "8px 16px",
+                cursor: "pointer",
+              }}
+            >
+              ✕ CLOSE
+            </button>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: 12,
+            }}
+          >
+            {GANGS.map((gang, i) => (
+              <div
+                key={gang.name}
+                data-ocid={`gangs.item.${i + 1}`}
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: `1px solid ${gang.color}44`,
+                  borderLeft: `4px solid ${gang.color}`,
+                  borderRadius: 10,
+                  padding: "14px 16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 4,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: "50%",
+                      background: gang.color,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div
+                    style={{ fontSize: 15, fontWeight: 700, color: gang.color }}
+                  >
+                    {gang.name}
+                  </div>
+                  <div
+                    style={{
+                      marginLeft: "auto",
+                      fontSize: 10,
+                      padding: "2px 8px",
+                      borderRadius: 12,
+                      background:
+                        gang.status === "Allied"
+                          ? "rgba(34,170,68,0.25)"
+                          : gang.status === "Enemy"
+                            ? "rgba(255,68,68,0.25)"
+                            : "rgba(150,150,150,0.2)",
+                      color:
+                        gang.status === "Allied"
+                          ? "#22aa44"
+                          : gang.status === "Enemy"
+                            ? "#ff4444"
+                            : "#aaa",
+                      border: `1px solid ${gang.status === "Allied" ? "#22aa44" : gang.status === "Enemy" ? "#ff4444" : "#666"}`,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {gang.status === "Allied"
+                      ? "✓ ALLIED"
+                      : gang.status === "Enemy"
+                        ? "✗ ENEMY"
+                        : "◆ NEUTRAL"}
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: "#aaa" }}>
+                  📍 {gang.territory}
+                </div>
+                <div style={{ fontSize: 11, color: "#888" }}>
+                  👥 {gang.members} members
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Mission HUD */}
+      {gameMode !== "select" && activeMission < MISSIONS.length && (
+        <div
+          data-ocid="mission.panel"
+          style={{
+            position: "absolute",
+            top: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "rgba(0,0,0,0.8)",
+            border: "1px solid rgba(255,200,0,0.35)",
+            borderRadius: 10,
+            padding: "10px 18px",
+            fontFamily: "monospace",
+            backdropFilter: "blur(6px)",
+            textAlign: "center",
+            minWidth: 220,
+            pointerEvents: "none",
+          }}
+        >
+          {missionComplete ? (
+            <div
+              data-ocid="mission.success_state"
+              style={{
+                color: "#00ff88",
+                fontSize: 16,
+                fontWeight: 700,
+                letterSpacing: 2,
+              }}
+            >
+              ✓ MISSION COMPLETE!
+              <br />
+              <span style={{ color: "#ffcc00" }}>{missionReward}</span>
+            </div>
+          ) : (
+            <>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#888",
+                  letterSpacing: 2,
+                  marginBottom: 2,
+                }}
+              >
+                ACTIVE MISSION {activeMission + 1}/{MISSIONS.length}
+              </div>
+              <div
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#ffcc00",
+                  letterSpacing: 1,
+                }}
+              >
+                {MISSIONS[activeMission].title}
+              </div>
+              <div style={{ fontSize: 11, color: "#ccc", marginTop: 2 }}>
+                {MISSIONS[activeMission].desc}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#00ff88",
+                  marginTop: 4,
+                  fontWeight: 700,
+                }}
+              >
+                Reward: {MISSIONS[activeMission].reward}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Online players panel top-right */}
       <div
@@ -2462,7 +2750,7 @@ export default function App() {
         ))}
       </div>
 
-      {/* Car brand selector */}
+      {/* Enter car button */}
       {!inCar && (
         <div
           style={{
@@ -2476,37 +2764,6 @@ export default function App() {
             alignItems: "center",
           }}
         >
-          <div style={{ display: "flex", gap: 8 }}>
-            {BRANDS.map((brand) => (
-              <button
-                type="button"
-                key={brand}
-                data-ocid={`game.brand.${brand.toLowerCase()}.button`}
-                onClick={() => setSelectedBrand(brand)}
-                style={{
-                  ...btnBase,
-                  padding: "6px 12px",
-                  fontSize: 12,
-                  borderColor:
-                    selectedBrand === brand
-                      ? BRAND_COLORS[brand]
-                      : "rgba(255,255,255,0.2)",
-                  background:
-                    selectedBrand === brand
-                      ? `${BRAND_COLORS[brand]}44`
-                      : "rgba(0,0,0,0.6)",
-                  color: selectedBrand === brand ? BRAND_COLORS[brand] : "#ccc",
-                  pointerEvents: "auto",
-                  width: "auto",
-                  height: "auto",
-                  flexDirection: "row",
-                }}
-              >
-                {brand}
-              </button>
-            ))}
-          </div>
-          {/* Enter car button */}
           <button
             type="button"
             data-ocid="game.enter.button"
@@ -2545,10 +2802,10 @@ export default function App() {
             gap: 8,
           }}
         >
-          {/* Current brand label */}
+          {/* Current car label */}
           <div
             style={{
-              color: BRAND_COLORS[selectedBrand],
+              color: carColor,
               fontFamily: "monospace",
               fontSize: 14,
               fontWeight: 700,
@@ -2557,7 +2814,7 @@ export default function App() {
               borderRadius: 8,
             }}
           >
-            🚗 {selectedBrand}
+            🚗 IN CAR
           </div>
           <button
             type="button"
@@ -2612,7 +2869,7 @@ export default function App() {
             fontSize: 11,
           }}
         >
-          {inCar ? `🚗 ${selectedBrand}` : "🚶 ON FOOT"}
+          {inCar ? "🚗 IN CAR" : "🚶 ON FOOT"}
         </div>
         <div>
           <span style={{ color: "#fff" }}>W/S</span>{" "}

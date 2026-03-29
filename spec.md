@@ -1,44 +1,30 @@
-# Urban Chaos - GTA-Style Open World Upgrade
+# Urban Chaos
 
 ## Current State
-- Single 3D scene with a BMW-style car drivable on a flat 200x200 plane
-- 30 random buildings with night lighting
-- Touch controls: gas, brake, left/right steering
-- Keyboard controls: WASD / arrow keys
-- HUD with speed and gear
-- No player character, no NPCs, no menus, no multiplayer
+Single-player 3D open-world GTA-style game built with React Three Fiber. Player can walk, drive various cars (BMW, muscle car, sports car, truck), interact with NPCs, explore gang territories, and use GTA-style menus. Backend is empty (actor {}).
 
 ## Requested Changes (Diff)
 
 ### Add
-- Open world map: larger 600x600 terrain with roads (grid + curved), sidewalks, parks, grass zones, and road markings
-- Player character (on foot): simple 3D humanoid capsule that can walk/run with WASD
-- Enter/Exit car mechanic: E key + on-screen button to enter nearby car, exit button while in car
-- Sit animation: player enters car and sits in driver seat position
-- NPC pedestrians: ~20 NPCs walking around sidewalks with simple path AI
-- Multiple car models: BMW sedan (existing), muscle car, sports car, pickup truck — all as 3D box-geometry shapes
-- GTA 5 style pause menu: ESC key opens fullscreen menu with tabs (Map, Stats, Online, Quit)
-- GTA V Gangs menu: in-game interaction menu when near gang territory showing gang name, join option, territory info
-- Online multiplayer: ICP backend stores player positions; polling syncs other players as ghost cars/characters on the map
-- Minimap HUD: small top-right radar showing player position, roads, and other online players as dots
+- Real online multiplayer: players can join game sessions and see each other moving in the same world in real time
+- Player registration: enter a username before joining the game
+- Session/room system: players join a shared game world
+- Friend invite: shareable room code so friends can join the same session
+- Backend canister APIs: register player, update position, get all players in session, create/join room
+- Polling-based sync (every ~500ms) to update other players' positions/rotations in the game world
+- Other online players rendered as distinct humanoid characters in the 3D world
+- Online players list HUD showing who is currently in the same session
 
 ### Modify
-- Camera: third-person follow cam when on foot, behind-car cam when driving
-- HUD: add health bar, wanted stars (1-5), cash display, minimap
-- Controls hint: update to show Enter/Exit car key
-- Map bounds: increase from 98 to 298
+- App startup flow: show a "Join Game" lobby screen before entering the 3D world where user sets their username and optionally enters a room code
+- Existing player position updates should also push to backend
 
 ### Remove
-- Nothing removed
+- Simulated/fake online friends panel (replaced with real data from backend)
 
 ## Implementation Plan
-1. Backend: Motoko canister stores player sessions (id, x, z, angle, inCar, carId) with updatePosition and getPlayers calls
-2. Frontend - World: expand ground plane to 600x600, add road grid (gray strips), sidewalks, park areas with green color
-3. Frontend - Player: PlayerCharacter component (capsule + body box), walk physics when not in car
-4. Frontend - Cars: 4 car types (BMW, MuscleCAR, SportsCar, Truck) placed at fixed spawn points; player can enter nearest
-5. Frontend - Enter/Exit: proximity check, E key + button; when entered, hide player mesh, show in car; exit spawns player beside car
-6. Frontend - NPCs: 20 NPCPedestrian components with simple random-walk AI on sidewalk paths
-7. Frontend - GTA5 Menu: ESC overlay with GTAV-style dark panel, tabs: Map / Stats / Online / Options / Quit
-8. Frontend - Gangs Menu: gang territory zones on map; when player enters zone, side panel shows gang info + Join button
-9. Frontend - Minimap: small circular radar in top-right corner showing nearby map features as dots
-10. Frontend - Multiplayer: poll backend every 2s, render other players as colored capsules/car shapes with name tags
+1. Motoko backend: store Player records (id, name, x, y, z, rotation, lastSeen), Room records; expose registerPlayer, updatePosition, getPlayersInRoom, createRoom, joinRoom, leaveRoom
+2. Frontend lobby screen: username input, create room or join with code, then enter game
+3. Polling hook: every 500ms call getPlayersInRoom, render other players as 3D humanoids
+4. HUD overlay: show list of online players in current room
+5. Remove simulated friends, wire up real player list
